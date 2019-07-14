@@ -11,4 +11,27 @@ Today, the speed of OpenSource Development has increased immensely. Getting driv
 + Database Driver Listing
 
 
-### Driver Supported
+### Database Supported
++ MongoDB   [WIP]
++ MySQL     [WIP]
++ PGSQL
++ ElasticSearch
++ Redis
++ CouchDB
+
+
+### API Schema
+GET /fetch/:dbTable/:idHash
+POST /fetch/:dbTable
+
+POST /create/:dbTable
+
+POST /update/:dbTable/:idHash
+PUT /update/:dbTable
+
+DELETE /delete/:idHash
+
+
+
+### Header
+x-apidb-token       Database Token, helps setting up enviroment, selecting database, and setting up encryption
