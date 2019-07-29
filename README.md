@@ -6,9 +6,10 @@ Today, the speed of OpenSource Development has increased immensely. Getting driv
 
 
 ### Milestones
-+ API Schema Specs
-+ API Server
-+ Database Driver Listing
++ Database Driver Listing to be supported                       Done
++ API Schema Specs                                              Done
++ Base Drive Class                                              
++ API Server                                                    
 
 
 ### Database Supported
@@ -21,17 +22,30 @@ Today, the speed of OpenSource Development has increased immensely. Getting driv
 
 
 ### API Schema
-GET /fetch/:dbTable/:idHash
-POST /fetch/:dbTable
+GET /fetch/:dbTable                                             List of records from table with pagination
+POST /fetch/:dbTable                                            List of records from table with filtering with pagination
 
-POST /create/:dbTable
+GET /fetch/:dbTable/:idHash                                     Details of record
 
-POST /update/:dbTable/:idHash
-PUT /update/:dbTable
+POST /create/:dbTable                                           Create new record
 
-DELETE /delete/:idHash
+POST /update/:dbTable/:idHash                                   Update a record
+PUT /update/:dbTable                                            Update a record
+
+DELETE /delete/:idHash                                          Delete a record
+
+
+### POST Schema
+payload : {
+    filter:{},
+    query:{},
+    columns:[]
+},
+format : "json"                                                 Format of data json, xml, csv
 
 
 
 ### Header
-x-apidb-token       Database Token, helps setting up enviroment, selecting database, and setting up encryption
+x-apidb-dbkey       Database Token, helps setting up enviroment, selecting database, and setting up encryption
+x-apidb-token
+

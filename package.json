@@ -1,10 +1,11 @@
 {
   "name": "apidb-server",
+  "title": "APIDB Server",
   "version": "1.0.0",
   "description": "API Based Database Gateway Server, used by Logiks and other platforms to setup secure connection to a multitude of database.",
   "main": "main.js",
   "scripts": {
-    "start":"node main.js",
+    "start": "node main.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -19,5 +20,15 @@
   ],
   "author": "SmartinfoLogiks Team",
   "license": "Apache 2.0",
-  "homepage": "https://github.com/SmartinfoLogiks/APIDB"
+  "homepage": "https://github.com/SmartinfoLogiks/APIDB",
+  "dependencies": {
+    "bunyan": "^1.8.12",
+    "lodash": "^4.17.14",
+    "md5": "^2.2.1",
+    "moment": "^2.24.0",
+    "restify": "^8.3.3",
+    "restify-errors": "^8.0.0",
+    "restify-logger": "^2.0.1",
+    "restify-plugins": "^1.6.0"
+  }
 }

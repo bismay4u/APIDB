@@ -1,3 +1,9 @@
+# Specific to this project
+config/apidb.js
+config/connections.js
+temp/
+tmp/
+
 # Logs
 logs
 *.log
