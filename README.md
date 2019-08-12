@@ -15,6 +15,7 @@ Today, the speed of OpenSource Development has increased immensely. Getting driv
 ### Database Supported
 + MongoDB   [WIP]
 + MySQL     [WIP]
++ SQLite    [WIP]
 + PGSQL
 + ElasticSearch
 + Redis
