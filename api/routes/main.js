@@ -9,11 +9,6 @@ module.exports = function (server, restify) {
     res.header("Access-Control-Allow-Methods", req.header("Access-Control-Request-Method"));
     res.header("Access-Control-Allow-Headers", req.header("Access-Control-Request-Headers"));
 
-    //res.setHeader('Access-Control-Allow-Origin', 'http://polleze.com');
-    // res.setHeader('Access-Control-Allow-Headers', 'Origin, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, X-Response-Time, X-PINGOTHER, X-CSRF-Token');
-    // res.setHeader('Access-Control-Allow-Methods', '*');
-    // res.setHeader('Access-Control-Expose-Headers', 'X-Api-Version, X-Request-Id, X-Response-Time');
-    // res.setHeader('Access-Control-Max-Age', '1000');
     next();
   });
 
@@ -64,6 +59,7 @@ module.exports = function (server, restify) {
       "freemem": Math.floor((os.freemem() / (1024 * 1024))) + " MB",
       "processmem": Math.floor(process.memoryUsage().heapUsed / (1024 * 1024)) + " MB",
       "cpus": os.cpus().length,
+      "cachestatus": _CACHE.cacheStatus(),
       "connections": __.getConnectionLength(),
     });
     return next();
@@ -82,6 +78,21 @@ module.exports = function (server, restify) {
     process.exit();
     return next();
   });
+
+  server.get('/admin/cache_clear', (req, res, next) => {
+    dbKey = req.header("x-apidb-dbkey");
+    
+    if(dbKey==null) {
+      _CACHE.clearCache();
+    } else {
+      _CACHE.clearCache(dbKey+":*");
+    }
+    
+    res.header('content-type', 'json');
+    res.send({"status":true});
+    return next();
+  });
+  
 
   //For testing purpose
   server.get('/test', (req, res, next) => {

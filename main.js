@@ -13,7 +13,6 @@ global.CONNECTPARAMS = require('./config/connections');
 const restify = require('restify');
 const restifyPlugins = require('restify-plugins');
 const errors = require('restify-errors');
-
 const bunyan = require('bunyan');
 
 
@@ -31,7 +30,6 @@ global.logger = bunyan.createLogger({
     name: CONFIG.name,
     streams: CONFIG.LOGGER,
 });
-
 
 const server = restify.createServer({
     name: CONFIG.name,
@@ -53,6 +51,7 @@ require('./api/security')(server, restify);
 
 //Some common functions
 global.__ = require('./api/datamaster');
+global._CACHE = require('./api/cache');
 
 //Loading Route Files
 require('./api/routes/main')(server, restify);

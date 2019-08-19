@@ -42,142 +42,178 @@ module.exports = {
         return md5(params.dbkey + params.table);
     },
 
-    getModel: function (params) {
+    saveModelSchema: function (params) {
+        that = this;
+        modelKey = this.getModelKey(params);
+
+        dataSchema = this.dataSchema[modelKey];
+
+        modelData = {};
+        _.each(dataSchema.paths, function (a, b) {
+            // if(["_id","__v"].indexOf(b)>=0) return;
+            modelData[b] = {
+                "type": a.instance,
+                "validator": a.validators,
+                // "index": a._index
+            };
+        });
+        _CACHE.storeData(params.dbkey + ":MONGOSCHEMA:" + modelKey, modelData);
+    },
+
+    getModel: function (params, callBack) {
+        that = this;
         modelKey = this.getModelKey(params);
         if (this.dataModels[modelKey] == null) {
-            this.dataSchema[modelKey] = new Schema({}, { collection: params.table });
-            this.dataModels[modelKey] = this.mongooseDB.model(modelKey, this.dataSchema[modelKey]);
+            _CACHE.fetchData(params.dbkey + ":MONGOSCHEMA:" + modelKey, function (modelSchema) {
+                if (modelSchema) {
+                    delete modelSchema._id;
+                    delete modelSchema.__v;
+                    that.dataSchema[modelKey] = new Schema(modelSchema, { collection: params.table });
+                } else {
+                    that.dataSchema[modelKey] = new Schema({}, { collection: params.table });
+                    that.saveModelSchema(params);
+                }
+                that.dataModels[modelKey] = that.mongooseDB.model(modelKey, that.dataSchema[modelKey]);
 
-            this.newSchema.push(modelKey);
+                that.newSchema.push(modelKey);
+
+                callBack(that.dataModels[modelKey]);
+            }, false);
+        } else {
+            callBack(that.dataModels[modelKey]);
         }
-
-        return this.dataModels[modelKey];
     },
 
     getSchema: function (params, callBack) {
         that = this;
         modelKey = md5(params.dbkey + params.table);
         if (this.dataSchema[modelKey] == null || params.rebuild) {
-            this.getModel(params).find({}).limit(1).exec(function (err, result) {
-                if (!err) {
-                    that.getProcessedModel({
-                        "dbkey": dbKey,
-                        "table": dbTable,
-                    }, result);
-
-                    callBack(that.dataSchema[modelKey]);
-                } else {
-                    // error handling
-                    callBack(false);
-                };
+            this.getModel(params, function (dataModel) {
+                if (!dataModel) return callBack(false);
+                dataModel.find({}).limit(1).exec(function (err, result) {
+                    if (!err) {
+                        that.getProcessedModel({
+                            "dbkey": params.dbkey,
+                            "table": params.table,
+                        }, result, function (dataModel) {
+                            callBack(that.dataSchema[modelKey]);
+                        });
+                    } else {
+                        // error handling
+                        callBack(false);
+                    };
+                });
             });
+
         } else {
             callBack(this.dataSchema[modelKey]);
         }
     },
 
-    getProcessedModel: function (params, recordData) {
+    getProcessedModel: function (params, recordData, callBack) {
         if (params == null) return false;
 
-        modelKey = this.getModelKey(params);
-        dataModel = this.getModel(params);
-
         that = this;
+        modelKey = this.getModelKey(params);
+        this.getModel(params, function (dataModel) {
+            if (Array.isArray(recordData)) {
+                demoData = recordData[0];
+            } else {
+                demoData = recordData;
+            }
+            if (demoData) {
+                if (demoData._doc != null) {
+                    demoData = demoData._doc;
 
-        if (Array.isArray(recordData)) {
-            demoData = recordData[0];
-        } else {
-            demoData = recordData;
-        }
-        if (demoData) {
-            if (demoData._doc != null) {
-                demoData = demoData._doc;
+                    if (params.columns == null) {
+                        params.columns = Object.keys(demoData);
+                    }
 
-                if (params.columns == null) {
-                    params.columns = Object.keys(demoData);
-                }
-
-                if (params.columns != null && params.columns.length > 0) {
-                    newCols = {};
-                    _.each(params.columns, function (a, b) {
-                        if (that.dataSchema[modelKey].path(a) == null) {
-                            typeStr = "" + (typeof demoData[a]);
-                            // console.log(a, demoData[a], typeof demoData[a], typeStr);
-                            switch (typeStr) {
-                                case "number":
-                                    newCols[a] = mongoose.Schema.Types.Number;
-                                    break;
-                                case "string":
-                                    newCols[a] = mongoose.Schema.Types.String;
-                                    break;
-                                case "boolean":
-                                    newCols[a] = mongoose.Schema.Types.Boolean;
-                                    break;
-                                case "object":
-                                    //Check Date
-                                    newCols[a] = mongoose.Schema.Types.Date;
-                                    break;
-                                default:
-                                    newCols[a] = mongoose.Schema.Types.String;
+                    if (params.columns != null && params.columns.length > 0) {
+                        newCols = {};
+                        _.each(params.columns, function (a, b) {
+                            if (that.dataSchema[modelKey].path(a) == null) {
+                                typeStr = "" + (typeof demoData[a]);
+                                // console.log(a, demoData[a], typeof demoData[a], typeStr);
+                                switch (typeStr) {
+                                    case "number":
+                                        newCols[a] = mongoose.Schema.Types.Number;
+                                        break;
+                                    case "string":
+                                        newCols[a] = mongoose.Schema.Types.String;
+                                        break;
+                                    case "boolean":
+                                        newCols[a] = mongoose.Schema.Types.Boolean;
+                                        break;
+                                    case "object":
+                                        //Check Date
+                                        newCols[a] = mongoose.Schema.Types.Date;
+                                        break;
+                                    default:
+                                        newCols[a] = mongoose.Schema.Types.String;
+                                }
                             }
-                        }
-                    });
+                        });
 
-                    if (Object.keys(newCols).length > 0) {
-                        that.dataSchema[modelKey].add(newCols);
-                        // console.log("UPDATED SCHEMA");
+                        if (Object.keys(newCols).length > 0) {
+                            that.dataSchema[modelKey].add(newCols);
+                            // console.log("UPDATED SCHEMA");
 
-                        if (that.newSchema.indexOf(modelKey) >= 0) {
-                            delete this.newSchema[modelKey];
+                            that.saveModelSchema(params);
+
+                            if (that.newSchema.indexOf(modelKey) >= 0) {
+                                delete that.newSchema[modelKey];
+                            }
                         }
                     }
-                }
-            } else {
-                if (params.columns == null) {
-                    params.columns = Object.keys(demoData);
-                }
+                } else {
+                    if (params.columns == null) {
+                        params.columns = Object.keys(demoData);
+                    }
 
-                var regexDates = [
-                    /^[0-9]{4}[\/\-][0-9]{2}[\/\-][0-9]{2}$/gmi,
-                    /^[0-9]{4}[\/\-][0-9]{2}[\/\-][0-9]{2}[ ]{1}[0-9]{2}:[0-9]{2}$/gmi,
-                    /^[0-9]{4}[\/\-][0-9]{2}[\/\-][0-9]{2}[ ]{1}[0-9]{2}:[0-9]{2}:[0-9]{2}$/gmi,
-                    /^[0-9]{4}[\/\-][0-9]{2}[\/\-][0-9]{2}[ T]{1}[0-9]{2}:[0-9]{2}:[0-9]{2}$/gmi,
-                ]
+                    var regexDates = [
+                        /^[0-9]{4}[\/\-][0-9]{2}[\/\-][0-9]{2}$/gmi,
+                        /^[0-9]{4}[\/\-][0-9]{2}[\/\-][0-9]{2}[ ]{1}[0-9]{2}:[0-9]{2}$/gmi,
+                        /^[0-9]{4}[\/\-][0-9]{2}[\/\-][0-9]{2}[ ]{1}[0-9]{2}:[0-9]{2}:[0-9]{2}$/gmi,
+                        /^[0-9]{4}[\/\-][0-9]{2}[\/\-][0-9]{2}[ T]{1}[0-9]{2}:[0-9]{2}:[0-9]{2}$/gmi,
+                    ]
 
-                if (params.columns != null && params.columns.length > 0) {
-                    newCols = {};
-                    _.each(params.columns, function (a, b) {
-                        if (that.dataSchema[modelKey].path(a) == null) {
-                            // console.log(a,demoData[a], typeof demoData[a]);
-                            if (parseInt(demoData[a]) == demoData[a]) {
-                                newCols[a] = mongoose.Schema.Types.Number;
-                            } else if (parseFloat(demoData[a]) == demoData[a]) {
-                                newCols[a] = mongoose.Schema.Types.Number;
-                            } else if (demoData[a] == "true" || demoData[a] == "false") {
-                                newCols[a] = mongoose.Schema.Types.Boolean;
-                            } else if (regexDates[0].test(demoData[a]) || regexDates[1].test(demoData[a]) || regexDates[2].test(demoData[a])) {
-                                newCols[a] = mongoose.Schema.Types.Date;
-                            } else if (demoData[a].substring(0, 1) == "[" && demoData[a].substring(demoData[a].length - 1, demoData[a].length) == "]") {
-                                newCols[a] = mongoose.Schema.Types.String;
-                            } else {
-                                // console.log(a, demoData[a], "NAN");
-                                newCols[a] = mongoose.Schema.Types.String;
+                    if (params.columns != null && params.columns.length > 0) {
+                        newCols = {};
+                        _.each(params.columns, function (a, b) {
+                            if (that.dataSchema[modelKey].path(a) == null) {
+                                // console.log(a,demoData[a], typeof demoData[a]);
+                                if (parseInt(demoData[a]) == demoData[a]) {
+                                    newCols[a] = mongoose.Schema.Types.Number;
+                                } else if (parseFloat(demoData[a]) == demoData[a]) {
+                                    newCols[a] = mongoose.Schema.Types.Number;
+                                } else if (demoData[a] == "true" || demoData[a] == "false") {
+                                    newCols[a] = mongoose.Schema.Types.Boolean;
+                                } else if (regexDates[0].test(demoData[a]) || regexDates[1].test(demoData[a]) || regexDates[2].test(demoData[a])) {
+                                    newCols[a] = mongoose.Schema.Types.Date;
+                                } else if (demoData[a].substring(0, 1) == "[" && demoData[a].substring(demoData[a].length - 1, demoData[a].length) == "]") {
+                                    newCols[a] = mongoose.Schema.Types.String;
+                                } else {
+                                    // console.log(a, demoData[a], "NAN");
+                                    newCols[a] = mongoose.Schema.Types.String;
+                                }
                             }
-                        }
-                    });
-                    if (Object.keys(newCols).length > 0) {
-                        that.dataSchema[modelKey].add(newCols);
-                        // console.log("UPDATED SCHEMA");
+                        });
+                        if (Object.keys(newCols).length > 0) {
+                            that.dataSchema[modelKey].add(newCols);
+                            // console.log("UPDATED SCHEMA");
 
-                        if (that.newSchema.indexOf(modelKey) >= 0) {
-                            delete this.newSchema[modelKey];
+                            that.saveModelSchema(params);
+
+                            if (that.newSchema.indexOf(modelKey) >= 0) {
+                                delete that.newSchema[modelKey];
+                            }
                         }
                     }
                 }
             }
-        }
-
-        return dataModel;
+            callBack(dataModel);
+        });
     },
 
     processFilter: function (filterData) {
@@ -349,7 +385,7 @@ module.exports = {
                 }
             });
         }
-        console.log(JSON.stringify(finalFilter), "MONGO");
+        // console.log(JSON.stringify(finalFilter), "MONGO");
         return finalFilter;
     },
 
@@ -380,35 +416,40 @@ module.exports = {
         }
 
         params.filter = this.processFilter(params.filter);
-        query = this.getModel(params).find(params.filter, params.columns, { skip: global.SKIP }).limit(global.LIMIT);
+        this.getModel(params, function (dataModel) {
+            if (!dataModel) return callBack([]);
 
-        if (params.orderby) {
-            ob = {};
-            orderBY = params.orderby.split(" ");
-            if (orderBY.length > 1) {
-                ob[orderBY[0]] = (orderBY[1].toUpperCase() == "ASC") ? 1 : -1;
-            } else {
-                ob[params.orderby] = -1;
-            }
-            query.sort(ob);
-        }
+            query = dataModel.find(params.filter, params.columns, { skip: global.SKIP }).limit(global.LIMIT);
 
-        query.exec(function (err, result) {
-            if (!err) {
-                if (that.newSchema.indexOf(modelKey) >= 0) {
-                    that.getProcessedModel({
-                        "dbkey": dbKey,
-                        "table": dbTable,
-                    }, result);
+            if (params.orderby) {
+                ob = {};
+                orderBY = params.orderby.split(" ");
+                if (orderBY.length > 1) {
+                    ob[orderBY[0]] = (orderBY[1].toUpperCase() == "ASC") ? 1 : -1;
+                } else {
+                    ob[params.orderby] = -1;
                 }
+                query.sort(ob);
+            }
 
-                // handle result
-                callBack(result);
-            } else {
-                // error handling
-                // console.log(err);
-                callBack([]);
-            };
+            query.exec(function (err, result) {
+                if (!err) {
+                    if (that.newSchema.indexOf(modelKey) >= 0) {
+                        that.getProcessedModel({
+                            "dbkey": dbKey,
+                            "table": dbTable,
+                        }, result, function (dataModel) {
+                            callBack(result);
+                        });
+                    } else {
+                        callBack(result);
+                    }
+                } else {
+                    // error handling
+                    // console.log(err);
+                    callBack([]);
+                };
+            });
         });
     },
     fetchData: function (params, callBack) {
@@ -417,37 +458,47 @@ module.exports = {
             return;
         }
         that = this;
-        query = this.getModel(params).findById(params.idhash, params.columns);
+        this.getModel(params, function (dataModel) {
+            if (!dataModel) return callBack([]);
 
-        query.exec(function (err, result) {
-            if (!err) {
-                if (result == null) {
-                    callBack(false);
-                    return;
-                }
-                if (that.newSchema.indexOf(modelKey) >= 0) {
-                    that.getProcessedModel(params, result);
-                }
-                // handle result
-                callBack(result);
-            } else {
-                // error handling
-                console.log(err);
-                callBack([]);
-            };
+            query = dataModel.findById(params.idhash, params.columns);
+
+            query.exec(function (err, result) {
+                if (!err) {
+                    if (result == null) {
+                        callBack(false);
+                        return;
+                    }
+                    if (that.newSchema.indexOf(modelKey) >= 0) {
+                        that.getProcessedModel(params, result, function (dataModel) {
+                            callBack(result);
+                        });
+                    } else {
+                        callBack(result);
+                    }
+                } else {
+                    // error handling
+                    console.log(err);
+                    callBack([]);
+                };
+            });
         });
     },
 
     insertData: function (params, recordData, callBack) {
-        this.getProcessedModel(params, recordData).create([recordData], function (err, result) {
-            if (!err) {
-                // handle result
-                callBack(result);
-            } else {
-                // error handling
-                console.log(err);
-                callBack(false);
-            };
+        this.getProcessedModel(params, recordData, function (dataModel) {
+            if (!dataModel) return callBack(false);
+
+            dataModel.create([recordData], function (err, result) {
+                if (!err) {
+                    // handle result
+                    callBack(result);
+                } else {
+                    // error handling
+                    console.log(err);
+                    callBack(false);
+                };
+            });
         });
     },
     updateData: function (params, recordData, callBack) {
@@ -455,15 +506,20 @@ module.exports = {
             callBack(false);
             return;
         }
-        this.getProcessedModel(params, recordData).findByIdAndUpdate(params.idhash, recordData, { new: true }, function (err, result) {
-            if (!err) {
-                // handle result
-                callBack(result);
-            } else {
-                // error handling
-                console.log(err);
-                callBack(false);
-            };
+
+        this.getProcessedModel(params, recordData, function (dataModel) {
+            if (!dataModel) return callBack(false);
+
+            dataModel.findByIdAndUpdate(params.idhash, recordData, { new: true }, function (err, result) {
+                if (!err) {
+                    // handle result
+                    callBack(result);
+                } else {
+                    // error handling
+                    // console.log(err);
+                    callBack(false);
+                };
+            });
         });
     },
     deleteData: function (params, callBack) {
@@ -472,15 +528,19 @@ module.exports = {
             return;
         }
 
-        this.getModel(params).findByIdAndDelete(params.idhash, function (err, result) {
-            if (!err) {
-                // handle result
-                callBack(result);
-            } else {
-                // error handling
-                console.log(err);
-                callBack(false);
-            };
+        this.getModel(params, function (dataModel) {
+            if (!dataModel) return callBack(false);
+
+            dataModel.findByIdAndDelete(params.idhash, function (err, result) {
+                if (!err) {
+                    // handle result
+                    callBack(result);
+                } else {
+                    // error handling
+                    // console.log(err);
+                    callBack(false);
+                };
+            });
         });
     },
 };
