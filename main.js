@@ -16,9 +16,12 @@ const errors = require('restify-errors');
 
 const bunyan = require('bunyan');
 
+
+global.glob = require('glob');
 global.fs = require('fs');
 global.path = require('path');
 global.moment = require('moment');
+global.md5 = require('md5');
 global._ = require('lodash');
 
 /**
@@ -26,10 +29,7 @@ global._ = require('lodash');
  */
 global.logger = bunyan.createLogger({
     name: CONFIG.name,
-    streams: [{
-        level: 'error',
-        path: './logs/error.log' // log ERROR and above to a file
-    }]
+    streams: CONFIG.LOGGER,
 });
 
 
@@ -44,14 +44,19 @@ const server = restify.createServer({
 server.config = CONFIG;
 server.errors = errors;
 
-//restify.CORS.ALLOW_HEADERS.push('sid');
-
-require('./api/misc')(server, restify);
+//Core Restify Plugins
 require('./api/plugins')(server, restify);
+require('./api/misc')(server, restify);
+require('./api/requests')(server, restify);
 require('./api/middleware')(server, restify);
-
 require('./api/security')(server, restify);
-require('./api/routes')(server, restify); 
+
+//Some common functions
+global.__ = require('./api/datamaster');
+
+//Loading Route Files
+require('./api/routes/main')(server, restify);
+require('./api/routes/data')(server, restify);
 
 /**
  * Start Server, Checks for availale PORTs

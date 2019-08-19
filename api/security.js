@@ -5,20 +5,42 @@
 module.exports = function(server) {
 
     server.use(function(req, res, next) {
-        // return next(
-        //     new server.errors.ForbiddenError("Public Key Invalid")
-        // );
-    
-        mbeeKey = req.header("appkey");
-    
-        req.set("GUID","TEST");
-    
         //API Validator : FIND API Authentication Protocol for the GUID
         //Could be Bearer, OAuth2, 2FA, etc.
-        mbeeAuth = req.header("authorization");
 
-        //console.log("Security Authorization");
-    
+        // console.log(req.headers);
+
+        path = req.getPath();
+        pathRoot = req.getPath().substring(1).split("/")[0].toLowerCase();
+
+        if(CONFIG.noauth.indexOf(path)>=0) {
+            return next();
+        }
+
+        authKey = req.header("authorization");
+        if(authKey==null) {
+            return next(
+                new server.errors.ForbiddenError("Public Key Invalid")
+            );
+        }
+        authKeyPayload = authKey.replace("x-apidb-token","").trim();
+        // console.log("Security Authorization",authKey,authKeyPayload);
+        
+        switch(pathRoot) {
+            case "":
+                break;
+            case "admin":
+                break;
+            default:
+                dbKey = req.header("x-apidb-dbkey");
+                if (dbKey == null || dbKey.length<=0 || Object.keys(CONNECTPARAMS).indexOf(dbKey)<0) {
+                    return next(
+                        new server.errors.ForbiddenError("APIKEY Invalid")
+                    );
+                }
+                break;
+        }
+        
         return next();
     });
 
