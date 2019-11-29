@@ -23,48 +23,50 @@ Today, the speed of OpenSource Development has increased immensely. Getting driv
 
 
 ### API Schema for Admin
-+ GET /														  Basic Server info
-+ GET /admin/\_debug												  Server Debug Information, if DEBUG parameter is on
-+ GET /admin 												  Admin information
-+ GET /admin/cache_clear 									  Clear data and app cache
-+ GET /admin/restart										  Restart server
-+ GET /admin/\_list 											  List DB Keys
-+ GET /admin/\_stats 											  System Statistics
++ **GET /**														  Basic Server info
++ **GET /admin/\_debug	**											  Server Debug Information, if DEBUG parameter is on
++ **GET /admin** 												  Admin information
++ **GET /admin/cache_clear** 									  Clear data and app cache
++ **GET /admin/restart**										  Restart server
++ **GET /admin/\_list** 											  List DB Keys
++ **GET /admin/\_stats** 											  System Statistics
 
 ### API Schema for Data
-+ GET /\_tables                                               List Tables
-+ GET /:dbTable                                               List of records from table with pagination
-+ POST /:dbTable                                              List of records from table with pagination with filtering
-+ GET /:dbTable/:idHash                                       Fetch Details of record
-+ POST /:dbTable/create                                       Create new record
-+ POST /:dbTable/:idHash                                      Update a record
-+ PUT /:dbTable/:idHash                                       Update a record
-+ DEL /:dbTable/:idHash                                       Delete a record Soft
-+ DEL /:dbTable/:idHash?purge=true                            Delete a record Permanenet
++ **GET /\_tables**                                               List Tables
++ **GET /:dbTable**                                               List of records from table with pagination
++ **POST /:dbTable**                                              List of records from table with pagination with filtering
++ **GET /:dbTable/:idHash**                                       Fetch Details of record
++ **POST /:dbTable/create**                                       Create new record
++ **POST /:dbTable/:idHash**                                      Update a record
++ **PUT /:dbTable/:idHash**                                       Update a record
++ **DEL /:dbTable/:idHash**                                       Delete a record Soft
++ **DEL /:dbTable/:idHash?purge=true**                            Delete a record Permanenet
 
 ### GET Params
-+ page                                                        Pagination index while listing, default 0
-+ limit                                                       Limit records while listing, default 20
-+ skip                                                        Skip records while listing, default 0
-+ purge                                                       To be used with delete for permananet deletion
-+ columns                                                     Which columns to view
-+ orderby                                                     To setup ordering direction and column, eg. title DESC
++ **page**                                                        Pagination index while listing, default 0
++ **limit**                                                       Limit records while listing, default 20
++ **skip**                                                        Skip records while listing, default 0
++ **purge**                                                       To be used with delete for permananet deletion
++ **columns**                                                     Which columns to view
++ **orderby**                                                     To setup ordering direction and column, eg. title DESC
 
 ### POST Schema
-+ columns                                                     Which columns to view
-+ orderby                                                     To setup ordering direction and column, eg. title DESC
-+ filter                                                      JSON Object structure, eg ```{"title":"Group Head", "age":[20,"GT"], "type":"staff"}```
-+ query                                                       To search for data using full text search in all columns
++ **columns**                                                     Which columns to view
++ **orderby**                                                     To setup ordering direction and column, eg. title DESC
++ **filter**                                                      JSON Object structure, eg ```{"title":"Group Head", "age":[20,"GT"], "type":"staff"}```
++ **query**                                                       To search for data using full text search in all columns
 
 
 ### More
-+ format : "json"                                             Format of data json, xml, csv
++ **format : "json"**                                             Format of data json, xml, csv
 
 
 
 ### Header
-+ x-apidb-dbkey       Database Token, helps setting up enviroment, selecting database, and setting up encryption
-+ x-apidb-token       Access privilege token
++ **x-apidb-dbkey**       Database Token, helps setting up enviroment, selecting database, and setting up encryption
++ **x-apidb-token**       Access privilege token
 
 
 
+Thank you
+Bismay
