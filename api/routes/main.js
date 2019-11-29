@@ -95,7 +95,7 @@ module.exports = function (server, restify) {
   
 
   //For testing purpose
-  server.get('/test', (req, res, next) => {
+  server.get('/debug', (req, res, next) => {
     if (!CONFIG.debug) {
       res.send(404);
       return next();

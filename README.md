@@ -22,7 +22,11 @@ Today, the speed of OpenSource Development has increased immensely. Getting driv
 + CouchDB
 
 
-### API Schema
+### API Schema for Admin
++ GET /														  Basic Server info
++ GET /debug												  Server Debug Information, if DEBUG parameter is on
+
+### API Schema for Data
 + GET /:dbTable                                               List of records from table with pagination
 + POST /:dbTable                                              List of records from table with pagination with filtering
 + GET /:dbTable/:idHash                                       Details of record
