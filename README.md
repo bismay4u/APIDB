@@ -24,18 +24,18 @@ Today, the speed of OpenSource Development has increased immensely. Getting driv
 
 ### API Schema for Admin
 + GET /														  Basic Server info
-+ GET /debug												  Server Debug Information, if DEBUG parameter is on
++ GET /admin/\_debug												  Server Debug Information, if DEBUG parameter is on
 + GET /admin 												  Admin information
 + GET /admin/cache_clear 									  Clear data and app cache
 + GET /admin/restart										  Restart server
-+ GET /admin/list 											  List DB Keys
-+ GET /admin/stats 											  System Statistics
++ GET /admin/\_list 											  List DB Keys
++ GET /admin/\_stats 											  System Statistics
 
 ### API Schema for Data
-+ GET /_tables 												  List Tables
++ GET /\_tables                                               List Tables
 + GET /:dbTable                                               List of records from table with pagination
 + POST /:dbTable                                              List of records from table with pagination with filtering
-+ GET /:dbTable/:idHash                                       Details of record
++ GET /:dbTable/:idHash                                       Fetch Details of record
 + POST /:dbTable/create                                       Create new record
 + POST /:dbTable/:idHash                                      Update a record
 + PUT /:dbTable/:idHash                                       Update a record
