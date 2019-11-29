@@ -47,7 +47,7 @@ module.exports = function (server, restify) {
     ]);
     return next();
   });
-  server.get('/admin/_stats', (req, res, next) => {
+  server.get('/admin/stats', (req, res, next) => {
     var os = require('os');
 
     res.header('content-type', 'json');
@@ -65,7 +65,7 @@ module.exports = function (server, restify) {
     return next();
   });
 
-  server.get('/admin/_list', (req, res, next) => {
+  server.get('/admin/list', (req, res, next) => {
     res.header('content-type', 'json');
     connectionList = Object.keys(CONNECTPARAMS);
     res.send(connectionList);
