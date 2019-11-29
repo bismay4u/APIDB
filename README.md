@@ -32,6 +32,7 @@ Today, the speed of OpenSource Development has increased immensely. Getting driv
 + GET /admin/stats 											  System Statistics
 
 ### API Schema for Data
++ GET /_tables 												  List Tables
 + GET /:dbTable                                               List of records from table with pagination
 + POST /:dbTable                                              List of records from table with pagination with filtering
 + GET /:dbTable/:idHash                                       Details of record
