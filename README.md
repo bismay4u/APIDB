@@ -24,7 +24,7 @@ Today, the speed of OpenSource Development has increased immensely. Getting driv
 
 ### API Schema for Admin
 + **GET /**														  Basic Server info
-+ **GET /admin/\_debug	**											  Server Debug Information, if DEBUG parameter is on
++ **GET /admin/\_debug**											  Server Debug Information, if DEBUG parameter is on
 + **GET /admin** 												  Admin information
 + **GET /admin/cache_clear** 									  Clear data and app cache
 + **GET /admin/restart**										  Restart server
@@ -69,4 +69,5 @@ Today, the speed of OpenSource Development has increased immensely. Getting driv
 
 
 Thank you
+
 Bismay
