@@ -11,7 +11,7 @@ global.CONNECTPARAMS = require('./config/connections');
  * Loading all plugin packages required
  */
 const restify = require('restify');
-const restifyPlugins = require('restify-plugins');
+const restifyPlugins = require('restify').plugins;
 const errors = require('restify-errors');
 const bunyan = require('bunyan');
 
