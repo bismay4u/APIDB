@@ -38,6 +38,6 @@
     "restify-errors": "^8.0.0",
     "restify-logger": "^2.0.1",
     "sqlite3": "^4.1.0",
-    "validator": "^11.1.0"
+    "validator": "^13.7.0"
   }
 }
