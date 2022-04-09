@@ -28,7 +28,7 @@
     "ioredis": "^4.14.0",
     "lodash": "^4.17.14",
     "md5": "^2.2.1",
-    "moment": "^2.24.0",
+    "moment": "^2.29.2",
     "mongoose": "^5.7.5",
     "mongoose-plugin-autoinc": "^1.1.9",
     "mongoose-string-query": "^0.2.7",
