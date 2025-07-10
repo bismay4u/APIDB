@@ -1,7 +1,8 @@
 {
     "global": {
         "apikey": "",
-        "secret": ""
+        "secret": "",
+        "cache_period": 0,
     },
     "apidbkey1": {
         "apikey": "",
@@ -16,6 +17,7 @@
         "prefix": "",
         "suffix": "",
         "block": [],
+        "cache_period": 1000,
         "readonly": false,
         "allowSQL": true,
         "params": {
