@@ -38,7 +38,8 @@ module.exports = {
             }
         };
         logger.info(`MSSQL.connect -> server=${config.server} port=${config.port} db=${config.database} user=${config.user}`);
-        const pool = new sql.ConnectionPool(config);
+        
+        const pool = new sql.ConnectionPool(config); 
         pool.connect().then(() => {
             this.poolMap[key] = pool;
             callback(this._wrap(pool, params));
